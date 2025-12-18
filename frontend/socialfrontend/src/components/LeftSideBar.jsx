@@ -38,8 +38,7 @@ function LeftSideBar() {
         {menu.map((item, i) => (
           <Link to={item?.path}>
             <div
-              className="flex items-center  gap-3 text-lg p-2  hover:text-[#5E2892] cursor-pointer font-bold
-"
+              className="flex items-center  gap-3 text-lg p-2  hover:text-[#5E2892] cursor-pointer font-bold"
             >
               <span>{item.icon}</span>
               <span>{item.label}</span>

@@ -66,4 +66,69 @@ router.delete("/:postId", authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/by-user/:userId", async (req, res) => {
+  try {
+    const posts = await Post.find({ user: req.params.userId })
+      .populate("user", "name email avatar")
+      .sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post("/like/:id", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const post = await Post.findById(id);
+    const hasLiked = post.likes.includes(userId);
+    if (hasLiked) {
+      post.likes.pull(userId);
+    } else {
+      post.likes.push(userId);
+
+      // Create notification if liker is not post owner
+
+      if (post.user.toString() !== req.user.id) {
+        const notification = new Notification({
+          recipient: post.user,
+          sender: userId,
+          type: "like",
+          post: id,
+        });
+        await notification.save();
+
+        const populatedNotification = await notification.populate(
+          "sender",
+          "name avatar"
+        );
+
+        // Send real-time notification
+
+        const io = req.app.get("io");
+        const recipientSocketId = userSockets.get(post.user.toString());
+
+        if (recipientSocketId) {
+          io.to(recipientSocketId).emit(
+            "notification:new",
+            populatedNotification
+          );
+        }
+      }
+    }
+
+    await post.save();
+
+    res.json({
+      id: post._id,
+      liked: !hasLiked,
+      likesCount: post.likes.length,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

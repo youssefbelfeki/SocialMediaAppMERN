@@ -31,7 +31,7 @@ export default function AvatarUploader({
 
     try {
       const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dxe3zrtqf/image/upload",
+        "https://api.cloudinary.com/v1_1/@dcyxg8vyn/image/upload",
         {
           method: "POST",
           body: formData,

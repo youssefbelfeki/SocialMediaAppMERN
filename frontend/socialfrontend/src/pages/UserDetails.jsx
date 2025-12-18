@@ -66,7 +66,7 @@ function UserDetails() {
 
       <div className="flex items-center mt-8 gap-4">
         <div className="relative  cursor-pointer">
-          <img src={profile?.image} alt=""/>
+          <img src={profile?.image} alt="" />
 
           <AvatarUploader
             src={profile?.avatar}

@@ -46,12 +46,11 @@ function Profile() {
   };
 
   if (!profile) return <div className="p-6 mt-10">Loading...</div>;
-
   const isOwner = user?._id === profile._id;
+  
   return (
     <div className="max-w-2xl mx-auto p-4 ">
       <WhatsHappening />
-
       <div className="flex items-center mt-8 gap-4">
         <div className="relative  cursor-pointer">
           <img src={profile?.image} alt=""/>

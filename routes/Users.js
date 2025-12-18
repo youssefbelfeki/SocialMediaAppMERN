@@ -74,7 +74,7 @@ router.post("/logout", (req, res) => {
   res.json({ message: "Logged out Successfully" });
 });
 
-router.get("/me/profile",authMiddleware, async (req, res) => {
+router.get("/me/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ error: "user not found" });
@@ -91,6 +91,28 @@ router.get("/:id", async (req, res) => {
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/:id/avatar", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { avatar } = req.body;
+
+    console.log("Avatar update - User ID:", id);
+    console.log("Avatar update - New URL:", avatar);
+
+    const user = await User.findByIdAndUpdate(id, { avatar }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log("Avatar updated successfully for user:", user._id);
+    res.json(user);
+  } catch (error) {
+    console.error("Avatar update error:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 
