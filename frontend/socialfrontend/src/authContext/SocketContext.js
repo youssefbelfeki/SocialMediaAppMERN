@@ -1,62 +1,65 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import {useAuth} from "../authContext/UserCotenxt"
+import { useAuth } from "../authContext/UserCotenxt";
 import { io } from "socket.io-client";
-const SocketContext = createContext()
+const SocketContext = createContext();
 
+export const useSocket = () => useContext(SocketContext);
 
-export const useSocket = () => useContext(SocketContext)
+export const SocketProvider = ({ children }) => {
+  const [socket, setSocket] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-export const SocketProvider = ({children}) => {
-     const [socket, setSocket] = useState(null);
-     const [notifications, setNotifications] = useState([]);
-      const [unreadCount, setUnreadCount] = useState(0);
+  const { user } = useAuth();
 
+  useEffect(() => {
+    if (user) {
+      const newSocket = io("http://localhost:5000", {
+        withCredentials: true,
+      });
 
-      const {user} = useAuth()
+      setSocket(newSocket);
 
+      // Join with user ID
 
-      useEffect(()=> {
-       if(user) {
-        const newSocket = io("http://localhost:5000", {
-             withCredentials: true,
-        })
+      newSocket.emit("user:join", user._id);
 
-        setSocket(newSocket)
+      // Listen for new notifications
 
-         // Join with user ID
+      newSocket.on("notification:new", (notification) => {
+        setNotifications((prev) => [notification, ...prev]);
 
-         newSocket.emit('user:join', user._id)
+        setUnreadCount((prev) => prev + 1);
+      });
 
-        // Listen for new notifications
+      fetchUnreadCount();
 
-        newSocket.on("notification:new", (notification)=> {
-            setNotifications(prev => [notification, ...prev])
+      return () => {
+        newSocket.close();
+      };
+    }
+  }, [user]);
 
-            setUnreadCount(prev => prev + 1) 
-        })
-
-        fetchUnreadCount();
-
-        return() => {
-            newSocket.close()
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:5000/notifications/unread-count",
+        {
+          credentials: "include",
         }
-       }
-      },[user])
+      );
+      const data = await res.json();
+      setUnreadCount(Number(data?.count ?? 0));
+    } catch (error) {
+      console.error("Failed to fetch unread count:", error);
+    }
+  };
 
-      const fetchUnreadCount = async() => {
-        try {
-            const res = await fetch("http://localhost:5000/notifications/unread-count", {
-                credentials: 'include',
-
-            })
-            const data = await res.json()
-              setUnreadCount(Number(data?.count ?? 0));
-        } catch (error) {
-            console.error('Failed to fetch unread count:', error);
-        }
-      }
-
-      return(
-        <SocketContext.Provider value={{socket, notifications,unreadCount , fetchUnreadCount}}>{children}</SocketContext.Provider>
-      )
-}
+  return (
+    <SocketContext.Provider
+      value={{ socket, notifications, unreadCount, fetchUnreadCount }}
+    >
+      {children}
+    </SocketContext.Provider>
+  );
+};

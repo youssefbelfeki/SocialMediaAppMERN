@@ -18,7 +18,6 @@ function CommentsSection({
   const [commentsLoaded, setCommentsLoaded] = useState(false);
 
   // Toggle comments visibility
-
   // Load comments for a post
 
   const loadComments = async () => {
@@ -100,8 +99,6 @@ function CommentsSection({
 
   return (
     <>
-      {/* Comment Button */}
-
       {/* Comments Section */}
 
       {showComments && (

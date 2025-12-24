@@ -12,7 +12,6 @@ export async function getCommentsByPost(postId) {
 }
 
 // Add a comment to a post
-
 export async function getCommentCount(postId) {
   const res = await fetch(`${COMMENTS}/count/${postId}`, {
     credentials: "include",
@@ -23,6 +22,8 @@ export async function getCommentCount(postId) {
   const data = await res.json();
   return data.count;
 }
+
+// Add a comment
 export async function addComment(postId, text) {
   const res = await fetch(`${COMMENTS}/${postId}`, {
     method: "POST",
@@ -36,7 +37,6 @@ export async function addComment(postId, text) {
 }
 
 // Add a reply to a comment
-
 export async function addReply(commentId, text) {
   const res = await fetch(`${COMMENTS}/reply/${commentId}`, {
     method: "POST",
